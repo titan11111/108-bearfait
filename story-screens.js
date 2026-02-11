@@ -127,6 +127,13 @@ const StoryScreens = (() => {
     }
   }
 
+  // コマ送り案内テキスト（モバイル時はAボタン・タップを明示）
+  function _getAdvanceHint() {
+    return (window.MOBILE || ('ontouchstart' in window))
+      ? '▶ タップ or Aボタンで次へ'
+      : '▶ CLICK / SPACE';
+  }
+
   // ピクセルキャラ描画（簡易ヒーロー）16x16 拡大
   function _drawHeroLarge(cx, cy, scale, facingRight, swordUp) {
     ctx.save();
@@ -522,15 +529,15 @@ const StoryScreens = (() => {
       }
     }
 
-    // ページ送り案内
+    // ページ送り案内（モバイルはAボタン・タップ表記）
     const allTextShown = totalChars >= page.text.join('').length;
     if (allTextShown) {
-      _drawBlinkText('▶ CLICK / SPACE', BASE_W / 2, BASE_H - 10, '10px monospace', '#888', time);
+      _drawBlinkText(_getAdvanceHint(), BASE_W / 2, BASE_H - 10, '10px monospace', '#888', time);
     }
 
     _drawFadeOverlay();
 
-    // 入力
+    // 入力: Space/Enter/Z（キーボード）、Aボタン=Space・Bボタン=Z（携帯）、クリック/タップ
     if (Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ')) {
       if (allTextShown) {
         _page++;
@@ -550,19 +557,26 @@ const StoryScreens = (() => {
     return true; // まだプロローグ中
   }
 
-  // マウスクリックでもページ送り
+  // マウスクリック・タップでページ送り（Aボタンと同じ挙動）
   let _clickListenerAdded = false;
+  function _triggerAdvance() {
+    Input.justPressed['Space'] = true;
+    Input.keys['Space'] = true;
+    setTimeout(() => { Input.keys['Space'] = false; }, 50);
+  }
   function _ensureClickListener() {
     if (_clickListenerAdded) return;
     _clickListenerAdded = true;
     canvas.addEventListener('click', () => {
-      if (_prologueActive || _epilogueActive) {
-        // Space押し扱い
-        Input.justPressed['Space'] = true;
-        Input.keys['Space'] = true;
-        setTimeout(() => { Input.keys['Space'] = false; }, 50);
-      }
+      if (_prologueActive || _epilogueActive) _triggerAdvance();
     });
+    // 携帯: タップで即コマ送り（クリック遅延を避ける）
+    canvas.addEventListener('touchend', (e) => {
+      if (_prologueActive || _epilogueActive) {
+        e.preventDefault();
+        _triggerAdvance();
+      }
+    }, { passive: false });
   }
 
   // =========================================
@@ -873,12 +887,12 @@ const StoryScreens = (() => {
 
     const allTextShown = totalChars >= page.text.join('').length;
     if (allTextShown) {
-      _drawBlinkText('▶ CLICK / SPACE', BASE_W / 2, BASE_H - 10, '10px monospace', '#888', time);
+      _drawBlinkText(_getAdvanceHint(), BASE_W / 2, BASE_H - 10, '10px monospace', '#888', time);
     }
 
     _drawFadeOverlay();
 
-    // 入力
+    // 入力: Aボタン(Space)・Bボタン(Z)・タップでも送れる
     if (Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ')) {
       if (allTextShown) {
         _page++;

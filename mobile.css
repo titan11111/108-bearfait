@@ -85,7 +85,7 @@
     pointer-events: auto;
   }
 
-  /* タッチボタン: 最小 48px（Apple HIG）、小学生でも押しやすい大きさ */
+  /* タッチボタン: 最小 48px（Apple HIG）、押した瞬間のフィードバック */
   .touch-btn {
     min-width: 52px;
     min-height: 52px;
@@ -95,6 +95,11 @@
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s ease, background 0.08s ease;
+  }
+  .touch-btn:active {
+    transform: scale(0.92);
   }
 
   .touch-btn.jump-btn {

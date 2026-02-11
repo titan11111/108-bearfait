@@ -21,7 +21,12 @@ const Input = {
   _setupTouch(id, code) {
     const el = document.getElementById(id);
     if (!el) return;
-    const down = function(e) { e.preventDefault(); if (!this.keys[code]) this.justPressed[code] = true; this.keys[code] = true; };
+    const down = function(e) {
+      e.preventDefault();
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(12);
+      if (!this.keys[code]) this.justPressed[code] = true;
+      this.keys[code] = true;
+    };
     const up = function(e) { e.preventDefault(); this.keys[code] = false; };
     el.addEventListener('touchstart', down.bind(this));
     el.addEventListener('touchend', up.bind(this));
