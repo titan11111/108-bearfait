@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG画像チェック — 113-ベアファイト</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 24px;
+      margin: 0;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 24px;
+      color: #ffd700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #0f3460;
+    }
+    .card h2 {
+      font-size: 14px;
+      margin: 0 0 12px 0;
+      color: #a0a0ff;
+      word-break: break-all;
+    }
+    .card .native {
+      margin-bottom: 16px;
+    }
+    .card .native img,
+    .card .native object {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+    .card .scaled {
+      background: #0f0f1a;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 12px;
+    }
+    .card .scaled span {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .card .scaled img,
+    .card .scaled object {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    object {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <h1>SVG画像チェック（敵キャラ）</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>enemy-skeleton.svg</h2>
+      <div class="native">
+        <object data="images/enemy-skeleton.svg" type="image/svg+xml" width="128" height="128"></object>
+      </div>
+      <div class="scaled">
+        <span>ゲーム内サイズ (16×16)</span>
+        <img src="images/enemy-skeleton.svg" width="16" height="16" alt="skeleton 16px">
+      </div>
+    </div>
+    <div class="card">
+      <h2>enemy-skull.svg</h2>
+      <div class="native">
+        <object data="images/enemy-skull.svg" type="image/svg+xml" width="128" height="128"></object>
+      </div>
+      <div class="scaled">
+        <span>ゲーム内サイズ (16×16)</span>
+        <img src="images/enemy-skull.svg" width="16" height="16" alt="skull 16px">
+      </div>
+    </div>
+    <div class="card">
+      <h2>enemy-daruma.svg</h2>
+      <div class="native">
+        <object data="images/enemy-daruma.svg" type="image/svg+xml" width="128" height="140"></object>
+      </div>
+      <div class="scaled">
+        <span>ゲーム内サイズ (16×16) → 表示時1.2倍</span>
+        <img src="images/enemy-daruma.svg" width="19" height="19" alt="daruma 1.2x">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
