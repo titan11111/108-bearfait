@@ -131,10 +131,13 @@ class CrumblePlatform {
 
 
 // ============================================================
-//  Game State
+//  Game State（ゲーム進行の状態は game-flow.js の GameStates と一致させる）
+//  state: start → prologue → playing ⟷ clear | gameover → epilogue → allclear
 // ============================================================
 let Game = {
+  /** 現在の画面・進行状態（GameStates のいずれか） */
   state: 'start',
+  /** 現在プレイ中のステージ番号（0〜5 = ステージ1〜6） */
   currentLevel: 0,
   score: 0,
   totalScore: 0,

@@ -331,3 +331,39 @@ const Levels = [
       {x:160,y:19}
     ],
     potions: [{ x: 44, y: 18 }, { x: 96, y: 14 }, { x: 140, y: 16 }, { x: 170, y: 15 }],
+    powerUps: [],
+    movingPlatforms: [
+      { x: 30, y: 17, rangeX: 4, rangeY: 0, speed: 35 },
+      { x: 80, y: 14, rangeX: 0, rangeY: 3, speed: 30 },
+      { x: 130, y: 15, rangeX: 3, rangeY: 0, speed: 32 }
+    ],
+    crumblePlatforms: [
+      { x: 50, y: 18 }, { x: 52, y: 18 }, { x: 108, y: 14 }, { x: 110, y: 14 }
+    ],
+    generate() {
+      const t = []; const top = 'castleTop'; const blk = 'castleBlock';
+      for (let x = 0; x < this.width; x++) {
+        if ((x >= 42 && x < 46) || (x >= 88 && x < 92) || (x >= 138 && x < 142)) { /* gaps */ }
+        else if ((x >= 58 && x < 61) || (x >= 118 && x < 121)) {
+          t.push({ x, y: 22, type: 'spike' }); t.push({ x, y: 23, type: blk }); t.push({ x, y: 24, type: blk });
+        } else {
+          t.push({ x, y: 22, type: top }); t.push({ x, y: 23, type: blk }); t.push({ x, y: 24, type: blk });
+        }
+      }
+      for (let x = 18; x < 26; x++) t.push({ x, y: 15, type: 'platform' });
+      for (let x = 34; x < 42; x++) t.push({ x, y: 18, type: 'platform' });
+      for (let x = 48; x < 58; x++) t.push({ x, y: 18, type: top });
+      for (let x = 64; x < 72; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 78; x < 88; x++) t.push({ x, y: 16, type: 'platform' });
+      for (let x = 94; x < 102; x++) t.push({ x, y: 13, type: 'platform' });
+      for (let x = 112; x < 118; x++) t.push({ x, y: 15, type: 'platform' });
+      for (let x = 124; x < 132; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 144; x < 152; x++) t.push({ x, y: 16, type: 'platform' });
+      for (let x = 158; x < 166; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 178; x < 186; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 186; x < 200; x++) { t.push({ x, y: 18, type: top }); for (let y = 19; y < 23; y++) t.push({ x, y, type: blk }); }
+      this.tiles = t;
+    }
+  }
+
+];

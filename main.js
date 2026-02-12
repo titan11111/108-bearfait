@@ -1,12 +1,13 @@
 // ============================================================
-//  main.js — Full replacement
-//  Part 8: Level loading, screens, game loop
-//  + Prologue / Epilogue / Title background integration
+//  main.js — レベル読込・画面表示・ゲームループ・初期化
+//  ゲーム進行は game-flow.js の GameStates に従い、state ごとに分岐する。
+//  依存: config, se, sprites, levels, input-world, game-flow, entities, collision-render, story-screens
 // ============================================================
 
+// ---------- ゲーム進行: レベル読込・画面表示 ----------
 function loadLevel(index) {
   if (index >= Levels.length) {
-    Game.state = 'allclear';
+    Game.state = GameStates.ALLCLEAR;
     showAllClear();
     return;
   }
@@ -47,7 +48,7 @@ function loadLevel(index) {
   Particles.list = [];
   Camera.x = 0; Camera.shakeTimer = 0;
   generateBG();
-  Game.state = 'playing';
+  Game.state = GameStates.PLAYING;
 }
 
 function showGameOver() {
@@ -65,10 +66,10 @@ function showClear() {
 
 function showAllClear() {
   document.getElementById('bossBar').style.display = 'none';
-  Game.state = 'epilogue';
+  Game.state = GameStates.EPILOGUE;
   if (window.BGM && window.BGM.playEnding) window.BGM.playEnding();
   StoryScreens.startEpilogue(function () {
-    Game.state = 'allclear';
+    Game.state = GameStates.ALLCLEAR;
     document.getElementById('allClearScreen').style.display = 'flex';
     document.getElementById('allClearScore').textContent = 'TOTAL SCORE: ' + Game.totalScore;
   });
@@ -122,32 +123,39 @@ function gameLoop(timestamp) {
   lastTime = timestamp;
   const time = timestamp;
 
-  // ======== Prologue（Aボタン/タップで進み、最後のページで進むと _callback → loadLevel(0) で state が 'playing' に） ========
-  if (Game.state === 'prologue') {
+  // ======== Prologue — ストーリー送り後 loadLevel(0) で PLAYING へ ========
+  if (Game.state === GameStates.PROLOGUE) {
     StoryScreens.updatePrologue(dt, time);
     Input.clear();
     requestAnimationFrame(gameLoop);
     return;
   }
 
-  // ======== Epilogue ========
-  if (Game.state === 'epilogue') {
+  // ======== Epilogue — エンディング＋スタッフロール後 ALLCLEAR へ ========
+  if (Game.state === GameStates.EPILOGUE) {
     StoryScreens.updateEpilogue(dt, time);
     Input.clear();
     requestAnimationFrame(gameLoop);
     return;
   }
 
-  // ======== Title (start) — draw rich Canvas background behind HTML overlay ========
-  if (Game.state === 'start') {
+  // ======== Title (start) — タイトル背景を Canvas で描画 ========
+  if (Game.state === GameStates.START) {
     StoryScreens.drawTitle(time);
     Input.clear();
     requestAnimationFrame(gameLoop);
     return;
   }
 
-  // ======== Playing ========
-  if (Game.state === 'playing') {
+  // ======== ステージクリア / ゲームオーバー — 画面表示のみ。ゲームロジックは止める ========
+  if (Game.state === GameStates.CLEAR || Game.state === GameStates.GAMEOVER) {
+    Input.clear();
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  // ======== Playing — アクション（ステージ1〜6） ========
+  if (Game.state === GameStates.PLAYING) {
     // Phase transition (Stage 6)
     if (Game.bossPhaseTransition > 0) {
       updateBossPhaseTransition(dt);
@@ -222,7 +230,7 @@ Input.init();
 document.getElementById('startBtn').addEventListener('click', function () {
   hideScreens();
   Game.totalScore = 0;
-  Game.state = 'prologue';
+  Game.state = GameStates.PROLOGUE;
   if (window.BGM && window.BGM.playOpening) window.BGM.playOpening();
   StoryScreens.startPrologue(function () {
     loadLevel(0);
@@ -241,11 +249,11 @@ document.getElementById('nextBtn').addEventListener('click', function () {
   loadLevel(Game.currentLevel + 1);
 });
 
-// ---- Restart Button (from All Clear) → オープニングBGM → Prologue again ----
+// ---- Restart Button (from All Clear) → オープニングBGM → Prologue から再開 ----
 document.getElementById('restartBtn').addEventListener('click', function () {
   hideScreens();
   Game.totalScore = 0;
-  Game.state = 'prologue';
+  Game.state = GameStates.PROLOGUE;
   if (window.BGM && window.BGM.playOpening) window.BGM.playOpening();
   StoryScreens.startPrologue(function () {
     loadLevel(0);
