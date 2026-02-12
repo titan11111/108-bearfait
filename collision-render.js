@@ -185,13 +185,13 @@ function resolveCollisions() {
     }
   }
 
-  // ---- Goal (ボス撃破後のみ) ----
+  // ---- Goal (ボス撃破後のみ) — 到達で CLEAR 状態へ ----
   if (Game.goalPos && Game.bossDefeated) {
     const gx = Game.goalPos.x * TILE;
     const gy = Game.goalPos.y * TILE;
     if (aabb(p, {x: gx, y: gy, w: 16, h: 32})) {
       if (window.SE) window.SE.clear();
-      Game.state = 'clear';
+      Game.state = GameStates.CLEAR;
       showClear();
     }
   }

@@ -213,7 +213,7 @@ class Player {
     if (this.hp <= 0) {
       this.hp = 0; this.dead = true;
       if (window.SE) window.SE.gameOver();
-      Game.state = 'gameover';
+      Game.state = GameStates.GAMEOVER;
       showGameOver();
     }
   }
