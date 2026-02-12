@@ -578,6 +578,12 @@ const StoryScreens = (() => {
     canvas.addEventListener('click', () => {
       if (_prologueActive || _epilogueActive) _triggerAdvance();
     });
+    // iOS: touchstart でも進む要求を記録（touchend が遅延・抑制されても確実に進む）
+    canvas.addEventListener('touchstart', (e) => {
+      if (_prologueActive || _epilogueActive) {
+        _advanceRequested = true;
+      }
+    }, { passive: true });
     // 携帯: タップで即コマ送り（クリック遅延を避ける）
     canvas.addEventListener('touchend', (e) => {
       if (_prologueActive || _epilogueActive) {
