@@ -480,6 +480,8 @@ const StoryScreens = (() => {
   ];
 
   let _prologueActive = false;
+  // iOS/携帯: タッチが次のフレームで処理される場合に備え、A/Bボタン用の進む要求フラグ
+  let _advanceRequested = false;
 
   function startPrologue(callback) {
     _page = 0;
@@ -538,7 +540,12 @@ const StoryScreens = (() => {
     _drawFadeOverlay();
 
     // 入力: Space/Enter/Z（キーボード）、Aボタン=Space・Bボタン=Z（携帯）、クリック/タップ
-    if (Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ')) {
+    // iOS: タッチが1フレーム遅れることがあるため _advanceRequested も参照する
+    const wantAdvance = _advanceRequested ||
+      Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ');
+    _advanceRequested = false;
+
+    if (wantAdvance) {
       if (allTextShown) {
         _page++;
         _timer = 0;
@@ -562,6 +569,7 @@ const StoryScreens = (() => {
   function _triggerAdvance() {
     Input.justPressed['Space'] = true;
     Input.keys['Space'] = true;
+    _advanceRequested = true; // iOS: 1フレーム遅れでも確実に進む
     setTimeout(() => { Input.keys['Space'] = false; }, 50);
   }
   function _ensureClickListener() {
@@ -577,6 +585,21 @@ const StoryScreens = (() => {
         _triggerAdvance();
       }
     }, { passive: false });
+
+    // iOS/携帯: Aボタン・Bボタンを押したときも「進む」を確実に検知（Input の clear タイミングに依存しない）
+    const btnJump = document.getElementById('btnJump');
+    const btnAttack = document.getElementById('btnAttack');
+    function requestAdvance() {
+      if (_prologueActive || _epilogueActive) _advanceRequested = true;
+    }
+    if (btnJump) {
+      btnJump.addEventListener('touchstart', requestAdvance, { passive: true });
+      btnJump.addEventListener('touchend', requestAdvance, { passive: true });
+    }
+    if (btnAttack) {
+      btnAttack.addEventListener('touchstart', requestAdvance, { passive: true });
+      btnAttack.addEventListener('touchend', requestAdvance, { passive: true });
+    }
   }
 
   // =========================================
@@ -842,8 +865,11 @@ const StoryScreens = (() => {
         return false;
       }
 
-      // スキップ
-      if (Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ')) {
+      // スキップ（iOS用に _advanceRequested も参照）
+      const skipCredits = _advanceRequested ||
+        Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ');
+      _advanceRequested = false;
+      if (skipCredits) {
         _epilogueActive = false;
         if (_callback) _callback();
         return false;
@@ -892,8 +918,12 @@ const StoryScreens = (() => {
 
     _drawFadeOverlay();
 
-    // 入力: Aボタン(Space)・Bボタン(Z)・タップでも送れる
-    if (Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ')) {
+    // 入力: Aボタン(Space)・Bボタン(Z)・タップ（iOS用に _advanceRequested も参照）
+    const wantAdvanceEp = _advanceRequested ||
+      Input.wasPressed('Space') || Input.wasPressed('Enter') || Input.wasPressed('KeyZ');
+    _advanceRequested = false;
+
+    if (wantAdvanceEp) {
       if (allTextShown) {
         _page++;
         _timer = 0;

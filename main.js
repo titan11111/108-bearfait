@@ -122,7 +122,7 @@ function gameLoop(timestamp) {
   lastTime = timestamp;
   const time = timestamp;
 
-  // ======== Prologue ========
+  // ======== Prologue（Aボタン/タップで進み、最後のページで進むと _callback → loadLevel(0) で state が 'playing' に） ========
   if (Game.state === 'prologue') {
     StoryScreens.updatePrologue(dt, time);
     Input.clear();
