@@ -364,6 +364,73 @@ const Levels = [
       for (let x = 186; x < 200; x++) { t.push({ x, y: 18, type: top }); for (let y = 19; y < 23; y++) t.push({ x, y, type: blk }); }
       this.tiles = t;
     }
+  },
+
+  // ======== Stage 6: 魔王の城（闇） / SHADOW KING → DEMON KING（2フェーズ） ========
+  {
+    width: 210, height: 25, theme: 'dark',
+    bossType: 'shadowKing', bossName: 'SHADOW KING',
+    bossPhase2Type: 'demonKing', bossPhase2Name: 'DEMON KING',
+    playerStart: { x: 2, y: 20 },
+    goalPos: { x: 205, y: 14 },
+    bossPos: { x: 196, y: 12 },
+    bossFloorY: 16,
+    tiles: [],
+    enemies: [
+      { type: 'skeleton', x: 16, y: 21, patrolRange: 3 },
+      { type: 'demonImp', x: 28, y: 14, patrolRange: 4 },
+      { type: 'skeleton', x: 42, y: 21, patrolRange: 3 },
+      { type: 'demonImp', x: 54, y: 12, patrolRange: 5 },
+      { type: 'skeleton', x: 68, y: 18, patrolRange: 4 },
+      { type: 'demonImp', x: 82, y: 13, patrolRange: 4 },
+      { type: 'skeleton', x: 96, y: 21, patrolRange: 3 },
+      { type: 'demonImp', x: 110, y: 11, patrolRange: 5 },
+      { type: 'skeleton', x: 124, y: 17, patrolRange: 4 },
+      { type: 'demonImp', x: 138, y: 14, patrolRange: 4 },
+      { type: 'skeleton', x: 152, y: 21, patrolRange: 3 },
+      { type: 'demonImp', x: 166, y: 12, patrolRange: 4 }
+    ],
+    coins: [
+      {x:10,y:20},{x:22,y:18},{x:36,y:19},{x:48,y:14},{x:60,y:17},{x:74,y:20},
+      {x:88,y:12},{x:102,y:16},{x:116,y:19},{x:130,y:13},{x:144,y:18},{x:158,y:20},{x:172,y:14}
+    ],
+    potions: [{ x: 52, y: 18 }, { x: 118, y: 15 }, { x: 178, y: 15 }],
+    powerUps: [{ x: 92, y: 12 }],
+    movingPlatforms: [
+      { x: 38, y: 16, rangeX: 3, rangeY: 0, speed: 32 },
+      { x: 78, y: 14, rangeX: 0, rangeY: 3, speed: 28 },
+      { x: 128, y: 15, rangeX: 4, rangeY: 0, speed: 30 }
+    ],
+    crumblePlatforms: [
+      { x: 62, y: 17 }, { x: 64, y: 17 }, { x: 134, y: 14 }, { x: 136, y: 14 }
+    ],
+    generate() {
+      const t = []; const top = 'darkTop'; const blk = 'darkBlock';
+      for (let x = 0; x < this.width; x++) {
+        if ((x >= 44 && x < 48) || (x >= 92 && x < 96) || (x >= 142 && x < 146)) { /* 穴 */ }
+        else if ((x >= 58 && x < 61) || (x >= 108 && x < 111)) {
+          t.push({ x, y: 22, type: 'spike' }); t.push({ x, y: 23, type: blk }); t.push({ x, y: 24, type: blk });
+        } else {
+          t.push({ x, y: 22, type: top }); t.push({ x, y: 23, type: blk }); t.push({ x, y: 24, type: blk });
+        }
+      }
+      for (let x = 18; x < 26; x++) t.push({ x, y: 15, type: 'platform' });
+      for (let x = 34; x < 42; x++) t.push({ x, y: 18, type: 'platform' });
+      for (let x = 50; x < 58; x++) t.push({ x, y: 18, type: top });
+      for (let x = 64; x < 72; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 80; x < 88; x++) t.push({ x, y: 16, type: 'platform' });
+      for (let x = 98; x < 106; x++) t.push({ x, y: 13, type: 'platform' });
+      for (let x = 114; x < 122; x++) t.push({ x, y: 15, type: 'platform' });
+      for (let x = 128; x < 136; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 148; x < 156; x++) t.push({ x, y: 16, type: 'platform' });
+      for (let x = 162; x < 170; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 182; x < 190; x++) t.push({ x, y: 14, type: 'platform' });
+      // ボス戦エリアへの坂
+      for (let x = 190; x < 194; x++) { t.push({ x, y: 20, type: top }); for (let y = 21; y < 23; y++) t.push({ x, y, type: blk }); }
+      for (let x = 194; x < 198; x++) { t.push({ x, y: 18, type: top }); for (let y = 19; y < 23; y++) t.push({ x, y, type: blk }); }
+      for (let x = 198; x < 210; x++) { t.push({ x, y: 18, type: top }); for (let y = 19; y < 23; y++) t.push({ x, y, type: blk }); }
+      this.tiles = t;
+    }
   }
 
 ];

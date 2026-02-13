@@ -16,8 +16,19 @@ class Projectile {
   }
   update(dt) {
     if (!this.alive) return;
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
+    // 回転攻撃用：中心（ボス）の周りを骸骨が回転する。ボスが消えたら弾も消す
+    if (this.orbitRadius != null) {
+      const b = Game.boss;
+      if (!b || !b.alive) { this.alive = false; return; }
+      const cx = b.x + b.w / 2;
+      const cy = b.y + b.h * 0.4;
+      this.orbitAngle += this.orbitSpeed * dt;
+      this.x = cx + Math.cos(this.orbitAngle) * this.orbitRadius;
+      this.y = cy + Math.sin(this.orbitAngle) * this.orbitRadius;
+    } else {
+      this.x += this.vx * dt;
+      this.y += this.vy * dt;
+    }
     this.life -= dt;
     if (this.life <= 0 || this.x < -50 || this.x > Game.worldWidth + 50 || this.y > FALL_DEATH_Y) {
       this.alive = false;
@@ -305,8 +316,9 @@ class Enemy {
     this.type = type;
     this.x = x * TILE; this.y = y * TILE;
     this.startX = this.x;
-    this.w = (type === 'daruma') ? 28 : (type === 'skull') ? 30 : 14;
-    this.h = (type === 'slime') ? 12 : (type === 'daruma') ? 24 : (type === 'skull') ? 28 : 14;
+    // スカルは見た目・当たり判定を1.4倍（30*1.4≈42, 28*1.4≈39）
+    this.w = (type === 'daruma') ? 28 : (type === 'skull') ? 42 : 14;
+    this.h = (type === 'slime') ? 12 : (type === 'daruma') ? 24 : (type === 'skull') ? 39 : 14;
     this.patrolRange = patrolRange * TILE;
     this.speed = type === 'slime' ? 30 : type === 'mechDrone' ? 40 : type === 'skeleton' ? 35 : type === 'demonImp' ? 45 : type === 'skull' ? 38 : type === 'daruma' ? 60 : 50;
     this.dir = 1; this.alive = true;
@@ -319,6 +331,11 @@ class Enemy {
     this.zigzagDir = 1;
     this.zigzagTimer = 0;
     this.zigzagAmplitude = 24;
+    // スカル: 少し動いてから急に加速するダッシュ用
+    this.skullDashTimer = 1.0 + Math.random() * 1.0;
+    this.skullDashCooldown = 2.8;
+    this.skullDashDuration = 0;
+    this.skullDashSpeed = 130;
     // スケルトン: ダッシュ用（急に主人公に向かって突進）
     this.dashTimer = 1.2 + Math.random() * 1.2;
     this.dashCooldown = 2.5;
@@ -360,6 +377,31 @@ class Enemy {
           }
         }
         if (this.dashDuration <= 0) {
+          this.x += this.speed * this.dir * dt;
+          if (this.x > this.startX + this.patrolRange) this.dir = -1;
+          if (this.x < this.startX - this.patrolRange) this.dir = 1;
+        }
+      }
+    } else if (this.type === 'skull') {
+      // スカル: 少しパトロールしてから急に加速して体当たり
+      if (this.skullDashDuration > 0) {
+        this.x += this.skullDashSpeed * this.dir * dt;
+        this.skullDashDuration -= dt;
+        if (this.skullDashDuration <= 0) this.skullDashTimer = this.skullDashCooldown;
+      } else {
+        this.skullDashTimer -= dt;
+        if (this.skullDashTimer <= 0 && player) {
+          const cx = this.x + this.w / 2;
+          const dist = Math.abs(playerCx - cx);
+          if (dist < 200 && dist > 24) {
+            this.dir = playerCx > cx ? 1 : -1;
+            this.skullDashDuration = 0.35;
+            this.skullDashTimer = this.skullDashCooldown;
+          } else {
+            this.skullDashTimer = 0.6;
+          }
+        }
+        if (this.skullDashDuration <= 0) {
           this.x += this.speed * this.dir * dt;
           if (this.x > this.startX + this.patrolRange) this.dir = -1;
           if (this.x < this.startX - this.patrolRange) this.dir = 1;
@@ -526,6 +568,7 @@ class Boss {
       this.w = 54; this.h = 68; this.maxHp = 40; this.hp = 40;
       this.speed = 30; this.attackRate = 1.0; this.patrolRange = 6 * TILE;
       this.skullThrowTimer = 0;
+      this.orbitSkullTimer = 0; // 骸骨4つ回転攻撃のクールダウン
       this.rageMode = false; this.rageTimer = 0;
       this.floatPhase = 0;
     }
@@ -841,22 +884,43 @@ class Boss {
       Particles.emit(this.x + this.w / 2, this.y + this.h / 2, 20, ['#ff4444', '#ffcc00', '#ff8800'], 20, 120);
     }
 
-    // Skull throw timer
+    // Skull throw timer / 回転骸骨タイマー
     this.skullThrowTimer -= dt;
+    this.orbitSkullTimer -= dt;
 
     if (this.attackCooldown <= 0) {
       this.attackCooldown = this.attackRate;
 
-      if (this.skullThrowTimer <= 0) {
-        // Skull throw: orbiting skulls fly at player
+      // 骸骨4つを出して回転させて攻撃（ボス中心の周りを周回）
+      if (this.orbitSkullTimer <= 0) {
+        this.orbitSkullTimer = this.rageMode ? 4.0 : 6.0;
+        const numSkulls = 4;
+        const orbitRadius = 58;
+        const orbitSpeed = this.rageMode ? 2.8 : 2.2; // rad/s
+        for (let i = 0; i < numSkulls; i++) {
+          const angle = (i / numSkulls) * Math.PI * 2;
+          const cx = this.x + this.w / 2;
+          const cy = this.y + this.h * 0.4;
+          const p = new Projectile(
+            cx + Math.cos(angle) * orbitRadius,
+            cy + Math.sin(angle) * orbitRadius,
+            0, 0, 'skull', 2, 'boss');
+          p.life = 6.0;
+          p.orbitRadius = orbitRadius;
+          p.orbitAngle = angle;
+          p.orbitSpeed = orbitSpeed;
+          Game.projectiles.push(p);
+        }
+        Camera.shake(3, 0.3);
+        Particles.emit(this.x + this.w / 2, this.y + this.h * 0.4, 8, ['#e8c830', '#f0d840', '#fff'], 12, 80);
+      } else if (this.skullThrowTimer <= 0) {
+        // Skull throw: 扇状に飛ばす
         this.skullThrowTimer = this.rageMode ? 2.5 : 4.0;
         const numSkulls = this.rageMode ? 5 : 3;
         for (let i = 0; i < numSkulls; i++) {
-          const delay = i * 0.15;
           const baseAngle = Math.atan2(py - (this.y + 10), px - (this.x + this.w / 2));
           const spread = (i - Math.floor(numSkulls / 2)) * 0.2;
           const spd = 130 + Math.random() * 30;
-          // Delayed spawn via setTimeout-style (using life offset)
           const p = new Projectile(
             this.x + this.w / 2, this.y + 10,
             Math.cos(baseAngle + spread) * spd,
