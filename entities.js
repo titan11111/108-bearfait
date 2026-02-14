@@ -231,14 +231,14 @@ class Player {
 
   getSlashBox() {
     if (this.slashTimer <= 0) return null;
-    const range = this.powered ? 24 : 18;
-    const dmg = this.powered ? this.slashDamage + 1 : this.slashDamage;
+    const SLASH_RANGE_NORMAL = 18, SLASH_RANGE_POWERED = 24;
+    const range = (this.powered ? SLASH_RANGE_POWERED : SLASH_RANGE_NORMAL) * DISPLAY_SCALE;
     return {
       x: this.facing > 0 ? this.x + this.w : this.x - range,
-      y: this.y - 2,
+      y: this.y - 3,
       w: range,
-      h: this.h + 4,
-      damage: dmg
+      h: this.h + 6,
+      damage: this.powered ? this.slashDamage + 1 : this.slashDamage
     };
   }
 
@@ -263,12 +263,13 @@ class Player {
       default: img = Assets.player.idle[0];
     }
 
+    const halfW = this.w / 2;
     if (this.facing < 0) {
-      ctx.translate(sx + img.width / 2, sy);
+      ctx.translate(sx + halfW, sy);
       ctx.scale(-1, 1);
-      ctx.drawImage(img, -img.width / 2, 0);
+      ctx.drawImage(img, -halfW, 0, this.w, this.h);
     } else {
-      ctx.drawImage(img, sx, sy);
+      ctx.drawImage(img, sx, sy, this.w, this.h);
     }
     ctx.restore();
 
@@ -511,12 +512,13 @@ class Enemy {
         ctx.drawImage(img, srcX, 0, sw, sh, sx, sy, this.w, this.h);
       }
     } else {
+      const halfW = this.w / 2;
       if (this.dir < 0) {
-        ctx.translate(sx + iw / 2, sy);
+        ctx.translate(sx + halfW, sy);
         ctx.scale(-1, 1);
-        ctx.drawImage(img, -iw / 2, 0, iw, ih);
+        ctx.drawImage(img, -halfW, 0, this.w, this.h);
       } else {
-        ctx.drawImage(img, sx, sy, iw, ih);
+        ctx.drawImage(img, sx, sy, this.w, this.h);
       }
     }
     ctx.restore();
@@ -598,6 +600,7 @@ class Boss {
         document.getElementById('bossBar').style.display = 'block';
         document.getElementById('bossName').textContent = this.name;
         Camera.shake(3, 0.5);
+        if (window.BGM && typeof window.BGM.playBoss === 'function') window.BGM.playBoss();
       }
       return;
     }
@@ -1075,7 +1078,7 @@ class Coin {
   }
   draw(ctx, camX) {
     if (this.collected) return;
-    ctx.drawImage(Assets.items.coin[this.animFrame % 4], this.x - camX, this.y);
+    ctx.drawImage(Assets.items.coin[this.animFrame % 4], this.x - camX, this.y, this.w, this.h);
   }
 }
 
@@ -1087,7 +1090,7 @@ class Potion {
   update(dt) {}
   draw(ctx, camX) {
     if (this.collected) return;
-    ctx.drawImage(Assets.items.potion, this.x - camX, this.y);
+    ctx.drawImage(Assets.items.potion, this.x - camX, this.y, this.w, this.h);
   }
 }
 
@@ -1107,7 +1110,7 @@ class PowerUp {
     if (this.collected) return;
     const sx = Math.round(this.x - camX);
     const sy = Math.round(this.y);
-    ctx.drawImage(Assets.items.powerUp, sx, sy);
+    ctx.drawImage(Assets.items.powerUp, sx, sy, this.w, this.h);
     ctx.globalAlpha = 0.2 + Math.sin(Date.now() * 0.008) * 0.15;
     ctx.fillStyle = '#ff8800';
     ctx.fillRect(sx - 2, sy - 2, this.w + 4, this.h + 4);

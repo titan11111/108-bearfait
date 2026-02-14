@@ -423,8 +423,8 @@ const Levels = [
       for (let x = 114; x < 122; x++) t.push({ x, y: 15, type: 'platform' });
       for (let x = 128; x < 136; x++) t.push({ x, y: 14, type: 'platform' });
       for (let x = 148; x < 156; x++) t.push({ x, y: 16, type: 'platform' });
-      for (let x = 162; x < 170; x++) t.push({ x, y: 14, type: 'platform' });
-      for (let x = 182; x < 190; x++) t.push({ x, y: 14, type: 'platform' });
+      for (let x = 162; x < 170; x++) t.push({ x, y: 16, type: 'platform' });
+      for (let x = 182; x < 190; x++) t.push({ x, y: 16, type: 'platform' });
       // ボス戦エリアへの坂
       for (let x = 190; x < 194; x++) { t.push({ x, y: 20, type: top }); for (let y = 21; y < 23; y++) t.push({ x, y, type: blk }); }
       for (let x = 194; x < 198; x++) { t.push({ x, y: 18, type: top }); for (let y = 19; y < 23; y++) t.push({ x, y, type: blk }); }

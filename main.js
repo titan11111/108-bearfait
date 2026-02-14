@@ -4,6 +4,53 @@
 //  依存: config, se, sprites, levels, input-world, game-flow, entities, collision-render, story-screens
 // ============================================================
 
+// ---------- 全ステージ共通: エンティティ表示スケール（150%） ----------
+/** 足元を固定して w,h をスケール（プレイヤー・敵用） */
+function scaleEntityKeepBottomCenter(e, s) {
+  const cx = e.x + e.w / 2, cy = e.y + e.h;
+  e.w *= s; e.h *= s;
+  e.x = cx - e.w / 2; e.y = cy - e.h;
+}
+/** 中心を固定して w,h をスケール（コイン・ポーション・パワーアップ用） */
+function scaleEntityKeepCenter(e, s) {
+  const cx = e.x + e.w / 2, cy = e.y + e.h / 2;
+  e.w *= s; e.h *= s;
+  e.x = cx - e.w / 2; e.y = cy - e.h / 2;
+}
+
+function scaleEntitiesForDisplay() {
+  const s = DISPLAY_SCALE;
+  if (Game.player) scaleEntityKeepBottomCenter(Game.player, s);
+  Game.enemies.forEach(e => {
+    const mod = (typeof ENEMY_SCALE_MODIFIER !== 'undefined' && ENEMY_SCALE_MODIFIER[e.type]) || 1;
+    const effectiveScale = s * mod;
+    scaleEntityKeepBottomCenter(e, effectiveScale);
+    e.startX = e.x;
+    e.patrolRange *= effectiveScale;
+    if (e.yBase !== undefined) e.yBase = e.y;
+    if (e.zigzagAmplitude !== undefined) e.zigzagAmplitude *= effectiveScale;
+  });
+  if (Game.boss && Game.boss.alive) {
+    const b = Game.boss;
+    const cx = b.x + b.w / 2;
+    b.w *= s; b.h *= s;
+    b.x = cx - b.w / 2;
+    b.y = b.floorY - b.h;
+    b.drawW *= s; b.drawH *= s;
+    b.drawOffX = (b.w - b.drawW) / 2;
+    b.drawOffY = b.h - b.drawH;
+  }
+  Game.coins.forEach(c => {
+    scaleEntityKeepCenter(c, s);
+    c.baseY = c.y;
+  });
+  Game.potions.forEach(po => scaleEntityKeepCenter(po, s));
+  Game.powerUps.forEach(pu => {
+    scaleEntityKeepCenter(pu, s);
+    pu.baseY = pu.y;
+  });
+}
+
 // ---------- ゲーム進行: レベル読込・画面表示 ----------
 function loadLevel(index) {
   if (index >= Levels.length) {
@@ -43,6 +90,8 @@ function loadLevel(index) {
   Game.bossPhase2Spawned = false;
 
   document.getElementById('bossBar').style.display = 'none';
+
+  scaleEntitiesForDisplay();
 
   Game.score = Game.totalScore;
   Particles.list = [];
@@ -93,6 +142,9 @@ function updateBossPhaseTransition(dt) {
     Game.bossPhase2Spawned = true;
     const level = Levels[Game.currentLevel];
     if (level.bossPhase2Type) {
+      if (window.BGM && typeof window.BGM.playBossPhase2 === 'function') {
+        window.BGM.playBossPhase2();
+      }
       Game.boss = new Boss(
         level.bossPhase2Type,
         level.bossPos.x,
@@ -100,13 +152,25 @@ function updateBossPhaseTransition(dt) {
         level.bossFloorY,
         level.bossPhase2Name || 'DEMON KING'
       );
+      if (typeof BOSS_PHASE2_SCALE === 'number') {
+        const b = Game.boss;
+        const cx = b.x + b.w / 2;
+        b.w *= BOSS_PHASE2_SCALE;
+        b.h *= BOSS_PHASE2_SCALE;
+        b.x = cx - b.w / 2;
+        b.y = b.floorY - b.h;
+        b.drawW *= BOSS_PHASE2_SCALE;
+        b.drawH *= BOSS_PHASE2_SCALE;
+        b.drawOffX = (b.w - b.drawW) / 2;
+        b.drawOffY = b.h - b.drawH;
+      }
       Game.boss.active = true;
       document.getElementById('bossBar').style.display = 'block';
       document.getElementById('bossName').textContent = Game.boss.name;
       document.getElementById('bossBarInner').style.width = '100%';
-      Camera.shake(5, 0.6);
-      Particles.emit(Game.boss.x + Game.boss.w / 2, Game.boss.y + Game.boss.h / 2, 25,
-        ['#ff4444', '#ffcc00', '#ff8800', '#e8c830', '#dd2525'], 24, 140);
+      Camera.shake(8, 0.8);
+      Particles.emit(Game.boss.x + Game.boss.w / 2, Game.boss.y + Game.boss.h / 2, 35,
+        ['#ff4444', '#ffcc00', '#ff8800', '#e8c830', '#dd2525', '#000'], 28, 160);
     }
   }
 

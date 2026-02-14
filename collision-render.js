@@ -68,7 +68,7 @@ function resolveCollisions() {
   // ---- 剣の当たり判定 ----
   const slashBox = p.getSlashBox();
 
-  // ---- Enemies ----
+  // ---- Enemies（当たり判定は scaleEntitiesForDisplay でスケール済みの w,h を使用、表示と一致） ----
   for (const enemy of Game.enemies) {
     if (!enemy.alive) continue;
     const eb = {x: enemy.x, y: enemy.y, w: enemy.w, h: enemy.h};
@@ -331,8 +331,15 @@ function drawTiles(camX) {
   }
 }
 
-function drawUI() {
-  const barX = 10, barY = 10, barW = 80, barH = 10;
+// ---- UI レイアウト定数 ----
+const UI = {
+  barX: 10, barY: 10, barW: 80, barH: 10,
+  scorePanelW: 108, scorePanelH: 34, scorePanelPadding: 6,
+  scoreFontSize: 13, powerBarW: 60, powerBarH: 5
+};
+
+function drawHpBar() {
+  const { barX, barY, barW, barH } = UI;
   ctx.fillStyle = '#333'; ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
   const hpRatio = Game.player.hp / Game.player.maxHp;
   ctx.fillStyle = '#cc2222'; ctx.fillRect(barX, barY, barW, barH);
@@ -340,50 +347,88 @@ function drawUI() {
   ctx.fillRect(barX, barY, barW * hpRatio, barH);
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
   ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
-  ctx.fillStyle = '#fff'; ctx.font = '8px monospace';
+  ctx.fillStyle = '#fff'; ctx.font = '9px monospace';
   ctx.fillText('HP', barX + 2, barY + 8);
+}
 
-  ctx.fillStyle = '#ffcc00'; ctx.font = '10px monospace';
-  ctx.fillText('SCORE: ' + Game.score, barX, barY + 24);
+function drawScorePanel() {
+  const { barX, barY } = UI;
+  const { scorePanelW, scorePanelH, scorePanelPadding, scoreFontSize } = UI;
+  const x = barX;
+  const y = barY + 20;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(x, y - 2, scorePanelW, scorePanelH);
+  ctx.strokeStyle = 'rgba(255, 204, 0, 0.55)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y - 2, scorePanelW, scorePanelH);
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 2;
+  ctx.font = 'bold ' + scoreFontSize + 'px monospace';
+  ctx.fillStyle = '#ffcc00';
+  ctx.fillText('SCORE: ' + Game.score, x + scorePanelPadding, y + 11);
   const collected = Game.coins.filter(c => c.collected).length;
-  ctx.fillText('COINS: ' + collected + '/' + Game.coins.length, barX, barY + 36);
+  ctx.fillStyle = '#ffdd77';
+  ctx.fillText('COINS: ' + collected + '/' + Game.coins.length, x + scorePanelPadding, y + 26);
+  ctx.shadowBlur = 0;
+  return y + scorePanelH;
+}
 
-  if (Game.player.powered) {
-    const pw = 60;
-    const pratio = Game.player.powerTimer / Game.player.powerDuration;
-    ctx.fillStyle = '#333'; ctx.fillRect(barX, barY + 42, pw, 5);
-    ctx.fillStyle = '#ff8800'; ctx.fillRect(barX, barY + 42, pw * pratio, 5);
-    ctx.strokeStyle = '#ffcc00'; ctx.strokeRect(barX, barY + 42, pw, 5);
-    ctx.fillStyle = '#ffcc00'; ctx.font = '7px monospace';
-    ctx.fillText('POWER', barX + 1, barY + 47);
-  }
+function drawPowerBar(powerY) {
+  const { barX, powerBarW, powerBarH } = UI;
+  const pratio = Game.player.powerTimer / Game.player.powerDuration;
+  ctx.fillStyle = '#333'; ctx.fillRect(barX, powerY, powerBarW, powerBarH);
+  ctx.fillStyle = '#ff8800'; ctx.fillRect(barX, powerY, powerBarW * pratio, powerBarH);
+  ctx.strokeStyle = '#ffcc00'; ctx.strokeRect(barX, powerY, powerBarW, powerBarH);
+  ctx.fillStyle = '#ffcc00'; ctx.font = '7px monospace';
+  ctx.fillText('POWER', barX + 1, powerY + 11);
+}
 
+function drawUI() {
+  const { barX, barY } = UI;
+  drawHpBar();
+  const scorePanelBottom = drawScorePanel();
+  if (Game.player.powered) drawPowerBar(scorePanelBottom);
   ctx.fillStyle = '#555'; ctx.font = '7px monospace';
   ctx.fillText('[Z]剣  [Z長押し]溜め撃ち', barX, BASE_H - 6);
-
   ctx.fillStyle = '#888'; ctx.font = '10px monospace';
   ctx.fillText('STAGE ' + (Game.currentLevel + 1), BASE_W - 60, barY + 10);
 
-  // Phase transition overlay for Stage 6
+  // Phase transition overlay for Stage 6（影の王→DEMON KING 覚醒：雷・恐怖演出）
   if (Game.bossPhaseTransition > 0) {
     const progress = 1 - (Game.bossPhaseTransition / 2.0);
+    const t = Date.now() * 0.012;
+    const flicker = 0.7 + Math.sin(t * 7) * 0.15 + Math.sin(t * 13) * 0.08;
+
     if (progress < 0.5) {
-      ctx.globalAlpha = progress * 2;
-      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = progress * 2 * flicker;
+      ctx.fillStyle = '#1a0a0a';
       ctx.fillRect(0, 0, BASE_W, BASE_H);
+      ctx.globalAlpha = progress * 1.5;
+      ctx.fillStyle = '#330000';
+      ctx.fillRect(0, 0, BASE_W, BASE_H);
+      drawLightningBolt(ctx, progress, t, 0.4);
     } else {
-      ctx.globalAlpha = (1 - progress) * 2;
-      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = (1 - progress) * 2 * flicker;
+      ctx.fillStyle = '#0a0000';
       ctx.fillRect(0, 0, BASE_W, BASE_H);
+      ctx.globalAlpha = (1 - progress) * 1.2;
+      ctx.fillStyle = '#220000';
+      ctx.fillRect(0, 0, BASE_W, BASE_H);
+      drawLightningBolt(ctx, 1 - progress, t, 0.7);
     }
     ctx.globalAlpha = 1;
 
-    ctx.fillStyle = '#ff4444';
-    ctx.font = '14px monospace';
+    ctx.font = 'bold 14px monospace';
     ctx.globalAlpha = Math.min(progress * 3, 1);
     ctx.textAlign = 'center';
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 8;
     if (progress < 0.5) {
+      ctx.fillStyle = '#ff4444';
       ctx.fillText('影が...消える...!', BASE_W / 2, BASE_H / 2 - 10);
+      ctx.fillStyle = 'rgba(255,80,80,0.5)';
+      ctx.font = '10px monospace';
+      ctx.fillText('何かが...近づく...', BASE_W / 2, BASE_H / 2 + 15);
     } else {
       ctx.fillStyle = '#ffcc00';
       ctx.fillText('DEMON KING 覚醒！', BASE_W / 2, BASE_H / 2 - 10);
@@ -391,7 +436,32 @@ function drawUI() {
       ctx.fillStyle = '#ff8844';
       ctx.fillText('本気を出す...！', BASE_W / 2, BASE_H / 2 + 10);
     }
+    ctx.shadowBlur = 0;
     ctx.textAlign = 'left';
+    ctx.globalAlpha = 1;
+  }
+}
+
+/** 雷エフェクト（影の王→DEMON KING 演出用） */
+function drawLightningBolt(ctx, intensity, seed, opacity) {
+  if (intensity < 0.1) return;
+  const count = Math.floor(1 + Math.sin(seed) * 1.5 + Math.cos(seed * 2) * 0.5) + 1;
+  for (let i = 0; i < count; i++) {
+    const xBase = (BASE_W * (0.2 + (i * 0.3) + Math.sin(seed + i) * 0.2));
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,' + Math.min(intensity * opacity * (0.6 + Math.sin(seed * 11 + i) * 0.3), 1) + ')';
+    ctx.lineWidth = 2;
+    let x = xBase;
+    let y = 0;
+    ctx.moveTo(x, y);
+    for (let step = 0; step < 12; step++) {
+      y += BASE_H / 12 + (Math.sin(seed * 7 + step) * 8);
+      x = xBase + (Math.sin(seed * 13 + step * 2) * 60) + (step % 2) * 20;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 0.5;
+    ctx.stroke();
     ctx.globalAlpha = 1;
   }
 }

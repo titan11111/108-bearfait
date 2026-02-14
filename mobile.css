@@ -1,12 +1,20 @@
 /* ============================================================
-   モバイル専用スタイル（iOS / 縦長対応）
-   ダブルタップ防止・スクロール防止・セーフエリア・操作性
+   モバイル専用スタイル（iOS / 縦長・横長対応）
+   ダブルタップ防止・スクロール防止・セーフエリア・操作性強化
    ============================================================ */
+
+/* iOS: セーフエリアをJSから参照する用（mobileResizeCanvasで使用） */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
 
 @media (max-width: 768px), (pointer: coarse) {
   html {
     overflow: hidden;
     height: 100%;
+    position: fixed;
+    width: 100%;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -16,14 +24,13 @@
     height: 100%;
     height: 100dvh;
     min-height: -webkit-fill-available;
+    position: fixed;
+    width: 100%;
     touch-action: manipulation;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    padding-top: max(8px, env(safe-area-inset-top));
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-    padding-left: max(8px, env(safe-area-inset-left));
-    padding-right: max(8px, env(safe-area-inset-right));
+    padding: 0;
+    /* セーフエリアはgameWrapperで管理 */
   }
 
   #gameWrapper {
@@ -31,48 +38,96 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     min-height: 0;
     position: relative;
     touch-action: manipulation;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
+  /* ======== キャンバス: 横長時にできるだけ大きく ======== */
   #gameCanvas {
     max-width: 100%;
     width: auto;
     height: auto;
-    max-height: calc(100vh - 90px);
-    max-height: calc(100dvh - 90px);
     flex: 1 1 auto;
     min-height: 0;
     object-fit: contain;
   }
 
-  /* モバイルコントローラー: 左下 D-pad、右下 A(ジャンプ) B(攻撃) */
+  /* ======== 縦向き ======== */
+  @media (orientation: portrait) {
+    #gameCanvas {
+      max-height: calc(100dvh - 140px);
+      max-height: calc(100vh - 140px);
+    }
+  }
+
+  /* ======== 横向き: コントロールを左右に配置、キャンバスを最大化 ======== */
+  @media (orientation: landscape) {
+    #gameWrapper {
+      flex-direction: row;
+    }
+    #gameCanvas {
+      max-height: 100dvh;
+      max-height: 100vh;
+      max-width: calc(100vw - 200px);
+      flex: 1 1 auto;
+    }
+  }
+
+  /* ======== モバイルコントローラー共通 ======== */
   #mobileControls {
     display: flex !important;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 88px;
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
     pointer-events: none;
     z-index: 20;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  /* 縦向き: 下部に配置 */
+  @media (orientation: portrait) {
+    #mobileControls {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 130px;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      flex-direction: row;
+    }
+  }
+
+  /* 横向き: 左右サイドに配置 */
+  @media (orientation: landscape) {
+    #mobileControls {
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      width: 100%;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      padding-top: max(12px, env(safe-area-inset-top));
+      flex-direction: row;
+    }
   }
 
   .dpad {
     position: static;
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     pointer-events: auto;
   }
@@ -80,63 +135,129 @@
   .action-btns {
     position: static;
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     pointer-events: auto;
   }
 
-  /* タッチボタン: 最小 48px（Apple HIG）、押した瞬間のフィードバック */
+  /* ======== タッチボタン: 大きく・押しやすく ======== */
   .touch-btn {
-    min-width: 52px;
-    min-height: 52px;
-    width: 52px;
-    height: 52px;
-    font-size: 22px;
+    min-width: 64px;
+    min-height: 64px;
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+    font-weight: bold;
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: transform 0.08s ease, background 0.08s ease;
+    transition: transform 0.06s ease, background 0.06s ease;
+    /* タッチ領域を実際のボタンより広くする */
+    position: relative;
   }
+
+  /* タッチ領域拡大（見えない余白） */
+  .touch-btn::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+  }
+
   .touch-btn:active {
-    transform: scale(0.92);
+    transform: scale(0.88);
+  }
+
+  /* 横向きでもっと大きいボタン */
+  @media (orientation: landscape) {
+    .touch-btn {
+      min-width: 68px;
+      min-height: 68px;
+      width: 68px;
+      height: 68px;
+      font-size: 26px;
+    }
+  }
+
+  /* 小さい画面（iPhone SE 等）ではやや小さく */
+  @media (max-height: 500px) and (orientation: portrait) {
+    .touch-btn {
+      min-width: 56px;
+      min-height: 56px;
+      width: 56px;
+      height: 56px;
+      font-size: 22px;
+    }
   }
 
   .touch-btn.jump-btn {
-    background: rgba(255, 204, 0, 0.35);
-    border-color: rgba(255, 204, 0, 0.7);
+    background: rgba(255, 204, 0, 0.4);
+    border-color: rgba(255, 204, 0, 0.75);
+    border-width: 3px;
     color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
   .touch-btn.jump-btn:active {
-    background: rgba(255, 220, 80, 0.6);
+    background: rgba(255, 220, 80, 0.7);
+    border-color: rgba(255, 204, 0, 1);
   }
 
   .touch-btn.attack-btn {
-    background: rgba(255, 68, 68, 0.35);
-    border-color: rgba(255, 68, 68, 0.7);
+    background: rgba(255, 68, 68, 0.4);
+    border-color: rgba(255, 68, 68, 0.75);
+    border-width: 3px;
     color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   }
   .touch-btn.attack-btn:active {
-    background: rgba(255, 100, 100, 0.6);
+    background: rgba(255, 100, 100, 0.7);
+    border-color: rgba(255, 68, 68, 1);
   }
 
-  /* 画面系オーバーレイもセーフエリア内に */
+  /* 方向ボタン */
+  .dpad .touch-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    border-width: 3px;
+  }
+  .dpad .touch-btn:active {
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  /* ======== 画面系オーバーレイ ======== */
   #startScreen, #gameOverScreen, #clearScreen, #allClearScreen {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  #startScreen h1 { font-size: clamp(20px, 6vw, 28px); }
+  #startScreen h1 { font-size: clamp(18px, 5vw, 28px); }
   #startScreen .sub { font-size: 11px; }
+
   .btn {
-    min-height: 48px;
-    padding: 14px 32px;
+    min-height: 52px;
+    padding: 14px 36px;
     font-size: 18px;
   }
   .controls-info { font-size: 10px; }
-  .controls-info .mobile-only { display: block !important; margin-top: 10px; color: #ffcc00; }
+  .controls-info .mobile-only {
+    display: block !important;
+    margin-top: 10px;
+    color: #ffcc00;
+    font-size: 12px;
+  }
 
   #bossBar {
     top: max(12px, env(safe-area-inset-top));
+  }
+
+  /* 横向き時にボスバーを少し上に */
+  @media (orientation: landscape) {
+    #bossBar {
+      top: max(6px, env(safe-area-inset-top));
+      width: 160px;
+    }
   }
 }

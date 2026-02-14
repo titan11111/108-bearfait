@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGM・音楽チェック — 108-ベアファイト</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 24px;
+      margin: 0;
+    }
+    h1 { font-size: 20px; margin-bottom: 8px; color: #ffd700; }
+    .note { font-size: 12px; color: #888; margin-bottom: 24px; }
+    h2 {
+      font-size: 16px;
+      margin: 28px 0 12px 0;
+      color: #a0a0ff;
+      border-bottom: 1px solid #0f3460;
+      padding-bottom: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #16213e;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #0f3460;
+    }
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #0f3460;
+    }
+    th {
+      background: #0f3460;
+      color: #ffd700;
+      font-size: 12px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1a2a4e; }
+    td:nth-child(1) { min-width: 80px; }
+    td:nth-child(2) { min-width: 120px; }
+    .file { color: #7dd; word-break: break-all; }
+    .usage { font-size: 12px; color: #aaa; }
+    .unassigned { background: #2a1a1a !important; color: #f88; }
+    .unassigned .file { color: #faa; }
+    .play-btn {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: #ffd700;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 6px;
+    }
+    .play-btn:hover { background: #ffdd44; }
+    .play-btn.stop { background: #666; color: #fff; }
+    .playing { outline: 2px solid #ffd700; outline-offset: 2px; }
+    ul { margin: 8px 0; padding-left: 20px; color: #ccc; font-size: 13px; }
+    .section-note { font-size: 12px; color: #888; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>BGM・音楽チェック（108-ベアファイト）</h1>
+  <p class="note">各ステージ・各曲の割り当てと、audio/ フォルダ内で未使用の音楽を確認できます。▶ で再生して内容をチェックできます。</p>
+
+  <h2>1. ステージ別 BGM 割り当て</h2>
+  <p class="section-note">※ このゲームはステージ単位でBGMを切り替えています。セクション別のBGMは未実装です。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>ステージ</th>
+        <th>テーマ</th>
+        <th>使用BGM（ファイル名）</th>
+        <th>雰囲気</th>
+        <th>試聴</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>grass</td>
+        <td class="file">夜明けのフロア.mp3</td>
+        <td>穏やか・冒険の始まり（草原）</td>
+        <td><button class="play-btn" data-src="audio/夜明けのフロア.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>grass</td>
+        <td class="file">夜明けのフロア.mp3</td>
+        <td>同上（草原・やや先へ）</td>
+        <td><button class="play-btn" data-src="audio/夜明けのフロア.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>ice</td>
+        <td class="file">夜明けのフロア (1).mp3</td>
+        <td>静謐・氷ステージ</td>
+        <td><button class="play-btn" data-src="audio/夜明けのフロア (1).mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>metal</td>
+        <td class="file">揺るがないまま突き進め.mp3</td>
+        <td>決意・戦闘（メカニカル）</td>
+        <td><button class="play-btn" data-src="audio/揺るがないまま突き進め.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>castle</td>
+        <td class="file">揺るがないまま突き進め (1).mp3</td>
+        <td>決意・戦闘（城）</td>
+        <td><button class="play-btn" data-src="audio/揺るがないまま突き進め (1).mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>dark</td>
+        <td class="file">深紅の審判.mp3 → Phase2で深紅の審判 (1).mp3</td>
+        <td>クライマックス・ボス戦（第2形態で曲切り替え）</td>
+        <td><button class="play-btn" data-src="audio/深紅の審判.mp3">▶</button> <button class="play-btn" data-src="audio/深紅の審判 (1).mp3">▶ Phase2</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2. シーン別 BGM（オープニング・エンディング）</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>シーン</th>
+        <th>ファイル名</th>
+        <th>試聴</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>オープニング・タイトル・プロローグ</td>
+        <td class="file">はじまりの黄昏.mp3</td>
+        <td><button class="play-btn" data-src="audio/はじまりの黄昏.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>エンディング（オールクリア後）</td>
+        <td class="file">旅路の果てに揺れる光.mp3</td>
+        <td><button class="play-btn" data-src="audio/旅路の果てに揺れる光.mp3">▶</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. 全BGMファイルと使用箇所</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>ファイル名</th>
+        <th>使用箇所</th>
+        <th>試聴</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td class="file">はじまりの黄昏.mp3</td>
+        <td class="usage">オープニング・タイトル・プロローグ</td>
+        <td><button class="play-btn" data-src="audio/はじまりの黄昏.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td class="file">夜明けのフロア.mp3</td>
+        <td class="usage">ステージ1, ステージ2</td>
+        <td><button class="play-btn" data-src="audio/夜明けのフロア.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td class="file">夜明けのフロア (1).mp3</td>
+        <td class="usage">ステージ3（氷）</td>
+        <td><button class="play-btn" data-src="audio/夜明けのフロア (1).mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td class="file">揺るがないまま突き進め.mp3</td>
+        <td class="usage">ステージ4</td>
+        <td><button class="play-btn" data-src="audio/揺るがないまま突き進め.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td class="file">深紅の審判.mp3</td>
+        <td class="usage">ステージ6 ボス戦 Phase1</td>
+        <td><button class="play-btn" data-src="audio/深紅の審判.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td class="file">旅路の果てに揺れる光.mp3</td>
+        <td class="usage">エンディング</td>
+        <td><button class="play-btn" data-src="audio/旅路の果てに揺れる光.mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td class="file">揺るがないまま突き進め (1).mp3</td>
+        <td class="usage">ステージ5</td>
+        <td><button class="play-btn" data-src="audio/揺るがないまま突き進め (1).mp3">▶</button></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td class="file">深紅の審判 (1).mp3</td>
+        <td class="usage">ステージ6 ラスボス Phase2（第二形態）</td>
+        <td><button class="play-btn" data-src="audio/深紅の審判 (1).mp3">▶</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>4. 割り当てていない音楽（audio/ にあるが BGM_FILES に未登録）</h2>
+  <p class="section-note">music.js の BGM_FILES に含まれておらず、ゲーム内で再生されていません。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>ファイル名</th>
+        <th>備考</th>
+        <th>試聴</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="unassigned">
+        <td class="file">はじまりの黄昏 (1).mp3</td>
+        <td>オープニングの別バージョン？ 未使用</td>
+        <td><button class="play-btn" data-src="audio/はじまりの黄昏 (1).mp3">▶</button></td>
+      </tr>
+      <tr class="unassigned">
+        <td class="file">旅路の果てに揺れる光 (1).mp3</td>
+        <td>エンディングの別バージョン？ 未使用</td>
+        <td><button class="play-btn" data-src="audio/旅路の果てに揺れる光 (1).mp3">▶</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    (function() {
+      var currentAudio = null;
+      function stopAll() {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio = null;
+        }
+        document.querySelectorAll('.play-btn').forEach(function(btn) {
+          btn.textContent = '▶';
+          btn.classList.remove('stop');
+          btn.parentElement.closest('tr') && btn.parentElement.closest('tr').classList.remove('playing');
+        });
+      }
+      document.querySelectorAll('.play-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var src = this.getAttribute('data-src');
+          if (!src) return;
+          if (currentAudio && currentAudio.src && currentAudio.src.indexOf(src) !== -1 && !currentAudio.paused) {
+            stopAll();
+            return;
+          }
+          stopAll();
+          currentAudio = new Audio(src);
+          currentAudio.volume = 0.6;
+          currentAudio.loop = false;
+          var tr = this.closest('tr');
+          tr && tr.classList.add('playing');
+          this.textContent = '■';
+          this.classList.add('stop');
+          currentAudio.play().catch(function() {});
+          currentAudio.onended = currentAudio.onerror = function() {
+            if (currentAudio && currentAudio.src.indexOf(src) !== -1) {
+              btn.textContent = '▶';
+              btn.classList.remove('stop');
+              tr && tr.classList.remove('playing');
+            }
+          };
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
